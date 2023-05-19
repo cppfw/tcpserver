@@ -1,3 +1,9 @@
+libtcpserver (0.1.1) unstable; urgency=medium
+
+  * initial release
+
+ -- Ivan Gagis <igagis@gmail.com>  Fri, 19 May 2023 14:39:42 +0300
+
 libtcpserver (0.1.0) unstable; urgency=low
 
   * Initial release
