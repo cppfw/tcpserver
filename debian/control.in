@@ -7,7 +7,6 @@ Build-Depends: debhelper (>= 9), prorab, prorab-extra,
 		clang-format,
 		clang-tidy,
 		libtst-dev,
-		libutki-dev,
 		libnitki-dev,
 		libsetka-dev
 Build-Depends-Indep: doxygen
