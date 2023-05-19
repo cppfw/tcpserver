@@ -1,0 +1,83 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+			"name": "(gdb) httpmodel::request_parser",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/tests/unit/out/dbg/tests",
+			"args": ["--suite=httpmodel__request_parser", "--test=samples[2]"],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tests/unit",
+			"environment": [
+				{
+					"name": "LD_LIBRARY_PATH",
+					"value": "../../src/out/dbg"
+				}
+			],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"preLaunchTask": "build-dbg"
+		},
+		{
+			"name": "(gdb) urlmodel::parser",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/tests/unit/out/dbg/tests",
+			"args": ["--suite=urlmodel__parser", "--test=samples[0]"],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tests/unit",
+			"environment": [
+				{
+					"name": "LD_LIBRARY_PATH",
+					"value": "../../src/out/dbg"
+				}
+			],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"preLaunchTask": "build-dbg"
+		},
+		{
+			"name": "(gdb) app",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/tests/app/out/dbg/app",
+			"args": [],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}/tests/app",
+			"environment": [
+				{
+					"name": "LD_LIBRARY_PATH",
+					"value": "../../src/out/dbg"
+				}
+			],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"setupCommands": [
+				{
+					"description": "Enable pretty-printing for gdb",
+					"text": "-enable-pretty-printing",
+					"ignoreFailures": true
+				}
+			],
+			"preLaunchTask": "build-dbg"
+		},
+    ]
+}

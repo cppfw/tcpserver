@@ -5,7 +5,7 @@ include prorab-install-dbgsrc.mk
 
 $(eval $(call prorab-config, ../config))
 
-this_name := pautina
+this_name := tcpserver
 
 this_soname := $(shell cat $(d)soname.txt)
 
