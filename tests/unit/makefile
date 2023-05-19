@@ -11,7 +11,7 @@ this_u_tcpserver_lib := ../../src/out/$(c)/libtcpserver$(dot_so)
 
 this_cxxflags += -I ../../src
 
-this_ldlibs += -ltst -lutki -lurlmodel -lhttpmodel $(this_u_tcpserver_lib)
+this_ldlibs += -ltst -lutki $(this_u_tcpserver_lib)
 
 this_no_install := true
 
