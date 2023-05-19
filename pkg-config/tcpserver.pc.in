@@ -1,0 +1,9 @@
+Name: tcpserver   # human-readable name
+Description: TCP server C++ library # human-readable description
+Version: $(version)
+URL: https://github.com/cppfw/tcpserver
+Requires:
+Conflicts:
+Libs: -ltcpserver
+Libs.private:
+Cflags:

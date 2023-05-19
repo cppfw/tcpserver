@@ -1,0 +1,45 @@
+Source: libtcpserver
+Section: libs
+Priority: extra
+Maintainer: Ivan Gagis <igagis@gmail.com>
+Build-Depends: debhelper (>= 9), prorab, prorab-extra,
+		libc6-dev,
+		clang-format,
+		clang-tidy,
+		libtst-dev,
+		libutki-dev,
+		libnitki-dev,
+		libsetka-dev
+Build-Depends-Indep: doxygen
+Standards-Version: 3.9.2
+
+Package: libtcpserver$(soname)
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: cross-platform TCP server C++ library.
+ TCP server library.
+
+Package: libtcpserver$(soname)-dbgsrc
+Section: debug
+Architecture: any
+Depends: libtcpserver$(soname)-dbgsym (= ${binary:Version}), ${misc:Depends}
+Description: debugging sources for libtcpserver$(soname) package.
+
+Package: libtcpserver-dev
+Section: libdevel
+Architecture: any
+Depends:
+	libnitki-dev,
+	libsetka-dev,
+	libtcpserver$(soname) (= ${binary:Version}), ${misc:Depends}
+Suggests: libtcpserver-doc
+Description: cross-platform TCP server C++ library.
+ TCP server library.
+
+Package: libtcpserver-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}
+Description: documentation for libtcpserver library.
+ For more details see description to libtcpserver-dev package.
