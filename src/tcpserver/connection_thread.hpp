@@ -52,6 +52,13 @@ class connection_thread : public nitki::loop_thread
 
 public:
 	connection_thread(server& owner);
+
+	connection_thread(const connection_thread&) = delete;
+	connection_thread& operator=(const connection_thread&) = delete;
+
+	connection_thread(connection_thread&&) = delete;
+	connection_thread& operator=(connection_thread&&) = delete;
+
 	~connection_thread() override;
 
 	std::optional<uint32_t> on_loop() override;

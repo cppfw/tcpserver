@@ -79,12 +79,14 @@ std::optional<uint32_t> connection_thread::on_loop()
 			return {};
 		}
 
-		auto c = reinterpret_cast<tcpserver::connection*>(t.user_data);
+		auto c = static_cast<tcpserver::connection*>(t.user_data);
 
 		if (c->status.get(opros::ready::read) && t.flags.get(opros::ready::read)) {
 			// data has arrived to socket and connection is able to receive it
 
 			constexpr const size_t receive_buffer_size = 0x1000; // 4kb
+			// no need to initialize receive buffer
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 			std::array<uint8_t, receive_buffer_size> buf;
 
 			try {
@@ -138,8 +140,7 @@ std::optional<uint32_t> connection_thread::on_loop()
 
 				const auto& data_to_send = c->sending_queue.front();
 
-				auto span =
-					utki::make_span(data_to_send.data() + c->num_bytes_sent, data_to_send.size() - c->num_bytes_sent);
+				auto span = utki::make_span(data_to_send).subspan(c->num_bytes_sent);
 
 				size_t num_bytes_sent = c->socket.send(span);
 

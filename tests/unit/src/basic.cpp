@@ -2,7 +2,7 @@
 #include <tst/check.hpp>
 
 namespace{
-tst::set set("basic", [](tst::suite& suite){
+const tst::set set("basic", [](tst::suite& suite){
     // TODO:
 });
 }

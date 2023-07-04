@@ -46,6 +46,12 @@ private:
 public:
 	connection(setka::tcp_socket&& socket);
 
+	connection(const connection&) = delete;
+	connection& operator=(const connection&) = delete;
+
+	connection(connection&&) = delete;
+	connection& operator=(connection&&) = delete;
+
 	virtual ~connection() = default;
 
 private:
@@ -54,7 +60,7 @@ private:
 
 	// stuff used in 'sending' state
 	std::deque<std::vector<uint8_t>> sending_queue;
-	size_t num_bytes_sent; // for front element of the seinding queue
+	size_t num_bytes_sent = 0; // for front element of the seinding queue
 
 protected:
 	/**

@@ -45,5 +45,11 @@
             "command": "make config=dbg test",
             "group": "build"
         },
+        {
+            "label": "test_",
+            "type": "shell",
+            "command": "make test",
+            "group": "build"
+        },
     ]
 }

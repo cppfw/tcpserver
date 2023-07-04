@@ -55,11 +55,17 @@ class server : public nitki::loop_thread
 
 public:
 	struct configuration {
-		uint16_t port = 80;
+		uint16_t port;
 	};
 
 	server(const configuration& config);
 	~server() override;
+
+	server(const server&) = delete;
+	server& operator=(const server&) = delete;
+
+	server(server&&) = delete;
+	server& operator=(server&&) = delete;
 
 	virtual utki::shared_ref<connection> spawn_connection(setka::tcp_socket&& socket) const = 0;
 };
