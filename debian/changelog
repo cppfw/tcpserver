@@ -1,3 +1,9 @@
+libtcpserver (0.1.2) unstable; urgency=medium
+
+  * fix lint issues
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 04 Jul 2023 18:10:57 +0300
+
 libtcpserver (0.1.1) unstable; urgency=medium
 
   * initial release
