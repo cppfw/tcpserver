@@ -9,7 +9,7 @@ this_srcs := $(call prorab-src-dir, src)
 
 this_u_tcpserver_lib := ../../src/out/$(c)/libtcpserver$(dot_so)
 
-this_cxxflags += -I ../../src
+this_cxxflags += -isystem ../../src
 
 this_ldlibs += -ltst -lutki $(this_u_tcpserver_lib)
 
