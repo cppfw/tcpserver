@@ -116,6 +116,8 @@ std::optional<uint32_t> connection_thread::on_loop()
 					this->owner.reclaim_thread(*this);
 					break;
 				}
+
+				// NOLINTNEXTLINE(bugprone-empty-catch)
 			} catch (std::exception& e) {
 				LOG([&](auto& o) {
 					o << "std::exception caught while receiving data from socket: " << e.what() << std::endl;
