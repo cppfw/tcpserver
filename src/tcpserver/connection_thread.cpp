@@ -113,16 +113,18 @@ std::optional<uint32_t> connection_thread::on_loop()
 						o << "disconnected (receive), quit thread!" << std::endl;
 					})
 					// destroy thread
+					// TODO: reclaim only connection
 					this->owner.reclaim_thread(*this);
-					break;
+					return {};
 				}
 			} catch (std::exception& e) {
 				LOG([&](auto& o) {
 					o << "std::exception caught while receiving data from socket: " << e.what() << std::endl;
 				})
 				// connection broken, destroy thread
+				// TODO: reclaim only connection
 				this->owner.reclaim_thread(*this);
-				break;
+				return {};
 			}
 		}
 
@@ -155,6 +157,7 @@ std::optional<uint32_t> connection_thread::on_loop()
 						o << "disconnected (send), quit thread!" << std::endl;
 					})
 					// destroy thread
+					// TODO: reclaim only connection
 					this->owner.reclaim_thread(*this);
 					return {};
 				}
