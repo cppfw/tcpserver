@@ -16,33 +16,27 @@ jobs:
 ##### coverage #####
   coverage:
     runs-on: ubuntu-latest
-    container: debian:bullseye
+    container: debian:bookworm
     name: coverage - measure
     env:
       linux_distro: debian
-      linux_release: bullseye
+      linux_release: bookworm
     steps:
       - name: add cppfw deb repo
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ env.linux_distro }} ${{ env.linux_release }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-          install: myci locales git
+          install: myci locales git pipx
       - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-      - name: install ci tools
-        run: |
-          apt --quiet install --assume-yes devscripts equivs python3-pip
-
-          # install gcovr >5.2
-          pip install git+https://github.com/gcovr/gcovr.git
       - name: git clone
-        uses: myci-actions/checkout@master
+        uses: myci-actions/checkout@main
       - name: prepare debian package
         run: myci-deb-prepare.sh
       - name: install deps
@@ -57,12 +51,12 @@ jobs:
       - name: test
         run: make config=gcov test
       - name: generate coverage report
-        run: gcovr --exclude-throw-branches --filter src/ --cobertura > cobertura.xml
-      - name: upload coverage report to artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: cobertura.xml
-          path: cobertura.xml
+        run: pipx run gcovr --exclude-throw-branches --filter src/ --cobertura > cobertura.xml
+      # - name: upload coverage report to artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: cobertura.xml
+      #     path: cobertura.xml
       - name: upload coverage data to codecov.io
         uses: codecov/codecov-action@v4
         if: always() # even if previous steps fail, this one needs to be run
@@ -79,21 +73,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: debian, codename: bullseye, image_owner: , package_type: deb}
-          - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
+          - {os: debian, codename: bookworm, image_owner: , package_type: deb}
+          - {os: debian, codename: bookworm, image_owner: arm32v7/, package_type: deb, labels: [arm32,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     steps:
       - name: add cppfw deb repo
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git
       - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
           repo-name: llvm
@@ -102,7 +96,7 @@ jobs:
         run: |
           apt --quiet install --assume-yes devscripts equivs
       - name: git clone
-        uses: myci-actions/checkout@master
+        uses: myci-actions/checkout@main
       - name: prepare debian package
         run: myci-deb-prepare.sh
       - name: install deps
@@ -125,19 +119,20 @@ jobs:
           # - {os: debian, codename: buster, image_owner: , package_type: deb}
           # - {os: debian, codename: buster, image_owner: i386/, package_type: deb, labels: [i386,docker]}
           # - {os: debian, codename: buster, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
-          - {os: debian, codename: bullseye, image_owner: , package_type: deb}
+          # - {os: debian, codename: bullseye, image_owner: , package_type: deb}
           # - {os: debian, codename: bullseye, image_owner: i386/, package_type: deb, labels: [i386,docker]}
-          - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
-          - {os: debian, codename: bullseye, image_owner: arm64v8/, package_type: deb, labels: [arm64,docker]}
+          # - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
+          # - {os: debian, codename: bullseye, image_owner: arm64v8/, package_type: deb, labels: [arm64,docker]}
           - {os: debian, codename: bookworm, image_owner: , package_type: deb}
           # - {os: debian, codename: bookworm, image_owner: i386/, package_type: deb, labels: [i386,docker]}
-          - {os: debian, codename: bookworm, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
+          - {os: debian, codename: bookworm, image_owner: arm32v7/, package_type: deb, labels: [arm32,docker]}
           - {os: debian, codename: bookworm, image_owner: arm64v8/, package_type: deb, labels: [arm64,docker]}
           # - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
-          - {os: ubuntu, codename: jammy, image_owner: , package_type: deb}
+          # - {os: ubuntu, codename: jammy, image_owner: , package_type: deb}
+          - {os: ubuntu, codename: noble, image_owner: , package_type: deb}
           # - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
-          - {os: raspbian, codename: bullseye, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
-          - {os: raspbian, codename: bookworm, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
+          # - {os: raspbian, codename: bullseye, image_owner: igagis/, package_type: deb, labels: [arm32,docker]}
+          - {os: raspbian, codename: bookworm, image_owner: igagis/, package_type: deb, labels: [arm32,docker]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: linux - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -147,22 +142,22 @@ jobs:
           # configure timezone to avoid 'tzdata' package to require user interaction during installation (needed for ubuntu:focal)
           TZ=Europe/Helsinki ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
       - name: add cppfw deb repo
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
           install: myci locales git devscripts equivs
       - name: add llvm repo (for clang-format)
-        uses: myci-actions/add-deb-repo@master
+        uses: myci-actions/add-deb-repo@main
         with:
           repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
-        uses: myci-actions/checkout@master
+        uses: myci-actions/checkout@main
       - name: set PACKAGE_VERSION
-        uses: myci-actions/export-env-var@master
+        uses: myci-actions/export-env-var@main
         with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
       - name: prepare debian package
         run: myci-deb-prepare.sh
@@ -201,7 +196,7 @@ jobs:
         rm -rf /usr/local/bin/python3*
         rm -rf /usr/local/bin/python3*-config
     - name: git clone
-      uses: myci-actions/checkout@master
+      uses: myci-actions/checkout@main
     - name: install clang-tidy and clang-format
       run: |
         brew install llvm
@@ -215,16 +210,16 @@ jobs:
     - name: install ci tools
       run: brew install myci make
     - name: set PATH to use latest make
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: PATH, value: "$HOMEBREW_PREFIX/opt/make/libexec/gnubin:$PATH"}
     - name: set CFLAGS
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: CFLAGS, value: "-isystem $HOMEBREW_PREFIX/include $CFLAGS"}
     - name: set CXXFLAGS
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: CXXFLAGS, value: "-isystem $HOMEBREW_PREFIX/include $CXXFLAGS"}
     - name: set LDFLAGS
-      uses: myci-actions/export-env-var@master
+      uses: myci-actions/export-env-var@main
       with: {name: LDFLAGS, value: "-L $HOMEBREW_PREFIX/lib $LDFLAGS"}
     - name: install deps
       run: myci-brew-install.sh `myci-list-deps-homebrew.sh`
@@ -246,9 +241,9 @@ jobs:
   #   - name: install ci tools
   #     run: brew install myci
   #   - name: git clone
-  #     uses: myci-actions/checkout@master
+  #     uses: myci-actions/checkout@main
   #   - name: set PACKAGE_VERSION
-  #     uses: myci-actions/export-env-var@master
+  #     uses: myci-actions/export-env-var@main
   #     with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
   #   - name: add cocoapods repo
   #     run: pod repo add --silent cppfw https://$MYCI_GIT_USERNAME@github.com/cppfw/cocoapods-repo.git
@@ -283,16 +278,16 @@ jobs:
   #   container: mingc/android-build-box:latest
   #   steps:
   #   - name: git clone
-  #     uses: myci-actions/checkout@master
+  #     uses: myci-actions/checkout@main
   #   - name: add cppfw deb repo
-  #     uses: myci-actions/add-deb-repo@master
+  #     uses: myci-actions/add-deb-repo@main
   #     with:
   #       repo: deb https://gagis.hopto.org/repo/cppfw/$(lsb_release --id --short | tr '[:upper:]' '[:lower:]') $(lsb_release --codename --short) main
   #       repo-name: cppfw
   #       keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
   #       install: myci
   #   - name: set PACKAGE_VERSION
-  #     uses: myci-actions/export-env-var@master
+  #     uses: myci-actions/export-env-var@main
   #     with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
   #   - name: build
   #     run: |
@@ -326,7 +321,7 @@ jobs:
           msys2-devel
           mingw-w64-${{ matrix.arch }}-toolchain
     - name: add cppfw pacman msys repo
-      uses: myci-actions/add-pacman-repo@master
+      uses: myci-actions/add-pacman-repo@main
       with:
         name: cppfw_msys
         url: https://gagis.hopto.org/repo/cppfw/msys2/msys
@@ -334,14 +329,14 @@ jobs:
         key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
         install: myci
     - name: add cppfw pacman msys/mingw repo
-      uses: myci-actions/add-pacman-repo@master
+      uses: myci-actions/add-pacman-repo@main
       with:
         name: cppfw_${{ matrix.repo }}
         url: https://gagis.hopto.org/repo/cppfw/msys2/${{ matrix.repo }}
         shell: 'msys2 {0}'
         key-server: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
     - name: git clone
-      uses: myci-actions/checkout@master
+      uses: myci-actions/checkout@main
     - name: prepare pacman package
       run: myci-apply-version.sh --version $(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in
     - name: build
@@ -368,7 +363,7 @@ jobs:
   #     uses: actions/checkout@v3
   #     with: {submodules: true}
   #   - name: install CoAPP tools
-  #     uses: myci-actions/install-coapp-tools@master
+  #     uses: myci-actions/install-coapp-tools@main
   #   - name: nuget update
   #     run: |
   #       nuget restore msvs_solution/msvs_solution.sln
@@ -378,108 +373,8 @@ jobs:
   #   - name: build
   #     run: .\nuget\build_nuget.ps1
   #   - name: deploy
-  #     uses: myci-actions/publish-nuget@master
+  #     uses: myci-actions/publish-nuget@main
   #     with:
   #       filename: '.\nuget\*.nupkg'
   #       api-key: ${{ secrets.NUGET_DOT_ORG_API_KEY }}
   #     if: startsWith(github.ref, 'refs/tags/')
-##### conan - linux #####
-  # conan-linux:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       include:
-  #         - {os: ubuntu, codename: jammy, image_owner: , arch: x86_64}
-  #         # - {os: debian, codename: bullseye, image_owner: , arch: x86_64}
-  #         # - {os: debian, codename: bullseye, image_owner: i386/, arch: x86, labels: [i386,docker]}
-  #         - {os: debian, codename: bullseye, image_owner: arm32v7/, arch: armhf, labels: [arm,docker]}
-  #   runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
-  #   container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
-  #   name: conan - linux - ${{ matrix.arch }}
-  #   steps:
-  #     - name: add llvm repo (for clang-format)
-  #       uses: myci-actions/add-deb-repo@master
-  #       with:
-  #         repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
-  #         repo-name: llvm
-  #         keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
-  #         install: clang-format clang-tidy
-  #     - name: add cppfw deb repo
-  #       uses: myci-actions/add-deb-repo@master
-  #       with:
-  #         repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
-  #         repo-name: cppfw
-  #         keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-  #         install: devscripts equivs myci prorab prorab-extra python3-pip cmake git
-  #     - name: install conan
-  #       run: pip3 --quiet install conan
-  #     - name: create default conan profile
-  #       run: |
-  #         conan profile detect --name default
-  #         sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
-  #     - name: git clone
-  #       uses: myci-actions/checkout@master
-  #       with:
-  #         submodules: false
-  #     - name: set PACKAGE_VERSION
-  #       uses: myci-actions/export-env-var@master
-  #       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #     - name: build
-  #       run: |
-  #         conan remote add cppfw $MYCI_CONAN_REMOTE
-  #         conan create conan --user $MYCI_CONAN_USER --channel main --version $PACKAGE_VERSION
-  #     - name: deploy conan package
-  #       run: |
-  #         conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
-  #         conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
-  #       if: startsWith(github.ref, 'refs/tags/')
-##### conan - macosx #####
-  # conan-macosx:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       os:
-  #         # - macos-10.15
-  #         - macos-11
-  #         - macos-12
-  #   name: conan - ${{ matrix.os }}
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - name: git clone
-  #       uses: myci-actions/checkout@master
-  #       with:
-  #         submodules: false
-  #     - name: install clang-tidy and clang-format
-  #       run: |
-  #         brew install llvm
-  #         ln -s "$(brew --prefix llvm)/bin/clang-format" "/usr/local/bin/clang-format"
-  #         ln -s "$(brew --prefix llvm)/bin/clang-tidy" "/usr/local/bin/clang-tidy"
-  #         ln -s "$(brew --prefix llvm)/bin/clang-apply-replacements" "/usr/local/bin/clang-apply-replacements"
-  #     - name: add cppfw tap
-  #       run: |
-  #         brew tap cppfw/tap
-  #         brew update
-  #     # NOTE: the preinstalled make is old and sometimes crashes, so install latest make
-  #     - name: install ci tools
-  #       run: brew install myci prorab prorab-extra conan make
-  #     - name: create default conan profile
-  #       run: |
-  #         conan profile detect --name default
-  #         sed -i -E "s/compiler.cppstd=.*$/compiler.cppstd=17/g" ~/.conan2/profiles/default
-  #     - name: set PATH to use latest make
-  #       uses: myci-actions/export-env-var@master
-  #       with: {name: PATH, value: "/usr/local/opt/make/libexec/gnubin:$PATH"}
-  #     - name: set PACKAGE_VERSION
-  #       uses: myci-actions/export-env-var@master
-  #       with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
-  #       if: startsWith(github.ref, 'refs/tags/')
-  #     - name: build
-  #       run: |
-  #         conan remote add cppfw $MYCI_CONAN_REMOTE
-  #         conan create conan --user $MYCI_CONAN_USER --channel main --version $PACKAGE_VERSION
-  #     - name: deploy conan package
-  #       run: |
-  #         conan remote login --password $MYCI_CONAN_PASSWORD cppfw $MYCI_CONAN_USER
-  #         conan upload --check --remote cppfw $PACKAGE_NAME/$PACKAGE_VERSION@$MYCI_CONAN_USER/main
-  #       if: startsWith(github.ref, 'refs/tags/')
