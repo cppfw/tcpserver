@@ -64,46 +64,48 @@ private:
 
 protected:
 	/**
-	 * @brief Turn on/off handle_received_data() notifications.
-	 * Not thread-safe.
-	 * @param can_receive - whether to turn on (true) or off (false) the handle_received_data() notifications.
-	 */
+   * @brief Turn on/off handle_received_data() notifications.
+   * Not thread-safe.
+   * @param can_receive - whether to turn on (true) or off (false) the
+   * handle_received_data() notifications.
+   */
 	void set_can_receive_data(bool can_receive);
 
 public:
 	/**
-	 * @return true if ready to handle more data.
-	 * @return true if not ready to handle more data.
-	 */
+   * @return true if ready to handle more data.
+   * @return true if not ready to handle more data.
+   */
 	virtual void handle_data_received(utki::span<const uint8_t> data) = 0;
 
 	/**
-	 * @return true if ready to receive more data.
-	 * @return true if not ready to receive data.
-	 */
+   * @return true if ready to receive more data.
+   * @return true if not ready to receive data.
+   */
 	virtual void handle_all_data_sent() = 0;
 
 	/**
-	 * @brief Check if send buffer is not empty.
-	 * Not thread-safe.
-	 * @return true if send buffer is not empty, i.e. some data is in process of being sent.
-	 * @return false otherwise.
-	 */
+   * @brief Check if send buffer is not empty.
+   * Not thread-safe.
+   * @return true if send buffer is not empty, i.e. some data is in process of
+   * being sent.
+   * @return false otherwise.
+   */
 	bool is_sending() const noexcept
 	{
 		return this->status.get(opros::ready::write);
 	}
 
 	/**
-	 * @brief Send data over the connection.
-	 * @param data - data to send.
-	 */
+   * @brief Send data over the connection.
+   * @param data - data to send.
+   */
 	// TODO: should be thread-safe?
 	void send(std::vector<uint8_t>&& data);
 
 	/**
-	 * @brief Disconnect the connection.
-	 */
+   * @brief Disconnect the connection.
+   */
 	void disconnect();
 };
 

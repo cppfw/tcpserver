@@ -15,30 +15,46 @@ Standards-Version: 3.9.2
 Package: libtcpserver$(soname)
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends:
+	${shlibs:Depends},
+	${misc:Depends}
 Description: cross-platform TCP server C++ library.
- TCP server library.
+	TCP server library.
+
+Package: libtcpserver-dbg$(soname)
+Section: libs
+Architecture: any
+Depends:
+	${shlibs:Depends},
+	${misc:Depends}
+Description: cross-platform TCP server C++ library.
+	Debug version of libtcpserver.
 
 Package: libtcpserver$(soname)-dbgsrc
 Section: debug
 Architecture: all
-Depends: libtcpserver$(soname)-dbgsym (= ${binary:Version}), ${misc:Depends}
+Depends:
+	libtcpserver$(soname)-dbgsym (= ${binary:Version}),
+	libtcpserver-dbg$(soname)-dbgsym (= ${binary:Version}),
+	${misc:Depends}
 Description: debugging sources for libtcpserver$(soname) package.
 
 Package: libtcpserver-dev
 Section: libdevel
 Architecture: any
 Depends:
+	libtcpserver$(soname) (= ${binary:Version}),
+	libtcpserver-dbg$(soname) (= ${binary:Version}),
+	${misc:Depends},
 	libnitki-dev,
-	libsetka-dev,
-	libtcpserver$(soname) (= ${binary:Version}), ${misc:Depends}
+	libsetka-dev
 Suggests: libtcpserver-doc
 Description: cross-platform TCP server C++ library.
- TCP server library.
+	TCP server library.
 
 Package: libtcpserver-doc
 Section: doc
 Architecture: all
 Depends: ${misc:Depends}
 Description: documentation for libtcpserver library.
- For more details see description to libtcpserver-dev package.
+	For more details see description to libtcpserver-dev package.

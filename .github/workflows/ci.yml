@@ -32,7 +32,7 @@ jobs:
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@main
         with:
-          repo: deb https://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
+          repo: deb http://apt.llvm.org/${{ env.linux_release }} llvm-toolchain-${{ env.linux_release }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: git clone
@@ -51,19 +51,33 @@ jobs:
       - name: test
         run: make config=gcov test
       - name: generate coverage report
-        run: pipx run gcovr --exclude-throw-branches --filter src/ --cobertura > cobertura.xml
-      # - name: upload coverage report to artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: cobertura.xml
-      #     path: cobertura.xml
+        # due to some bug in gcov, we need to use --gcov-ignore-parse-errors=negative_hits.warn
+        run: pipx run gcovr --gcov-ignore-parse-errors=negative_hits.warn --exclude-throw-branches --filter src/ --cobertura > cobertura.xml
+      - name: upload coverage report to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura.xml
+          path: cobertura.xml
       - name: upload coverage data to codecov.io
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         if: always() # even if previous steps fail, this one needs to be run
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          # do not search for coverage files automatically, upload only specified files
+          disable_search: true
           files: cobertura.xml
           # flags: unittests # optional
+          name: codecov-umbrella # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+      - name: upload test report to codecov.io
+        if: always() # even if previous steps fail, this one needs to be run
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          # do not search for coverage files automatically, upload only specified files
+          disable_search: true
+          files: tests/unit/out/gcov/junit.xml
           name: codecov-umbrella # optional
           fail_ci_if_error: true # optional (default = false)
           verbose: true # optional (default = false)
@@ -73,8 +87,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {os: debian, codename: bookworm, image_owner: , package_type: deb}
-          - {os: debian, codename: bookworm, image_owner: arm32v7/, package_type: deb, labels: [arm32,docker]}
+          - {os: debian, codename: bookworm, image_owner: }
+          - {os: debian, codename: bookworm, image_owner: arm32v7/, labels: [ubuntu-24.04-arm]}
+          - {os: debian, codename: bookworm, image_owner: arm64v8/, labels: [ubuntu-24.04-arm]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: sanitizer - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -85,27 +100,22 @@ jobs:
           repo: deb https://gagis.hopto.org/repo/cppfw/${{ matrix.os }} ${{ matrix.codename }} main
           repo-name: cppfw
           keys-asc: https://gagis.hopto.org/repo/cppfw/pubkey.gpg
-          install: myci locales git
+          install: myci git
       - name: add llvm repo (for clang-format)
         uses: myci-actions/add-deb-repo@main
         with:
-          repo: deb https://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
+          repo: deb http://apt.llvm.org/${{ matrix.codename }} llvm-toolchain-${{ matrix.codename }} main
           repo-name: llvm
           keys-asc: https://apt.llvm.org/llvm-snapshot.gpg.key
       - name: install ci tools
         run: |
-          apt --quiet install --assume-yes devscripts equivs
+          apt install --assume-yes devscripts equivs
       - name: git clone
         uses: myci-actions/checkout@main
       - name: prepare debian package
         run: myci-deb-prepare.sh
       - name: install deps
         run: myci-deb-install-build-deps.sh
-      - name: add DE locale
-        # needed for testing that locale with "," as decimal delimiter does not break the parsing with string_parser
-        run: |
-          echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen
-          locale-gen
       - name: build
         run: make config=asan
       - name: test
@@ -118,21 +128,21 @@ jobs:
         include:
           # - {os: debian, codename: buster, image_owner: , package_type: deb}
           # - {os: debian, codename: buster, image_owner: i386/, package_type: deb, labels: [i386,docker]}
-          # - {os: debian, codename: buster, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
+          # - {os: debian, codename: buster, image_owner: arm32v7/, package_type: deb, labels: [ubuntu-24.04-arm]}
           # - {os: debian, codename: bullseye, image_owner: , package_type: deb}
           # - {os: debian, codename: bullseye, image_owner: i386/, package_type: deb, labels: [i386,docker]}
-          # - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [arm,docker]}
-          # - {os: debian, codename: bullseye, image_owner: arm64v8/, package_type: deb, labels: [arm64,docker]}
+          # - {os: debian, codename: bullseye, image_owner: arm32v7/, package_type: deb, labels: [ubuntu-24.04-arm]}
+          # - {os: debian, codename: bullseye, image_owner: arm64v8/, package_type: deb, labels: [ubuntu-24.04-arm]}
           - {os: debian, codename: bookworm, image_owner: , package_type: deb}
           # - {os: debian, codename: bookworm, image_owner: i386/, package_type: deb, labels: [i386,docker]}
-          - {os: debian, codename: bookworm, image_owner: arm32v7/, package_type: deb, labels: [arm32,docker]}
-          - {os: debian, codename: bookworm, image_owner: arm64v8/, package_type: deb, labels: [arm64,docker]}
+          - {os: debian, codename: bookworm, image_owner: arm32v7/, package_type: deb, labels: [ubuntu-24.04-arm]}
+          - {os: debian, codename: bookworm, image_owner: arm64v8/, package_type: deb, labels: [ubuntu-24.04-arm]}
           # - {os: ubuntu, codename: focal, image_owner: , package_type: deb}
           # - {os: ubuntu, codename: jammy, image_owner: , package_type: deb}
           - {os: ubuntu, codename: noble, image_owner: , package_type: deb}
-          # - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [arm,docker]}
-          # - {os: raspbian, codename: bullseye, image_owner: igagis/, package_type: deb, labels: [arm32,docker]}
-          - {os: raspbian, codename: bookworm, image_owner: igagis/, package_type: deb, labels: [arm32,docker]}
+          # - {os: raspbian, codename: buster, image_owner: igagis/, package_type: deb, labels: [ubuntu-24.04-arm]}
+          # - {os: raspbian, codename: bullseye, image_owner: igagis/, package_type: deb, labels: [ubuntu-24.04-arm]}
+          # - {os: raspbian, codename: bookworm, image_owner: igagis/, package_type: deb, labels: [ubuntu-24.04-arm]}
     runs-on: ${{ (matrix.labels == '' && 'ubuntu-latest') || matrix.labels }}
     container: ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
     name: linux - ${{ matrix.image_owner }}${{ matrix.os }}:${{ matrix.codename }}
@@ -158,7 +168,7 @@ jobs:
         uses: myci-actions/checkout@main
       - name: set PACKAGE_VERSION
         uses: myci-actions/export-env-var@main
-        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+        with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh)}
       - name: prepare debian package
         run: myci-deb-prepare.sh
       - name: install deps
@@ -169,7 +179,9 @@ jobs:
           echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen
           locale-gen
       - name: build
-        run: dpkg-buildpackage --unsigned-source --unsigned-changes
+        run: |
+          cd build
+          dpkg-buildpackage --unsigned-source --unsigned-changes
       # - name: upload binaries to artifacts
       #   uses: actions/upload-artifact@v3.1.2
       #   with:
@@ -180,7 +192,7 @@ jobs:
       - name: deploy deb packages
         run: |
           echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
-          myci-deploy-apt-ssh.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main ../lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.*deb
+          myci-deploy-apt-ssh.sh --key repo_key_rsa --server gagis.hopto.org --repo cppfw/${{ matrix.os }} --distro ${{ matrix.codename }} --component main lib${PACKAGE_NAME}*_${PACKAGE_VERSION}_*.*deb
         if: matrix.package_type == 'deb' && startsWith(github.ref, 'refs/tags/')
 ##### macosx #####
   macosx:
@@ -244,7 +256,7 @@ jobs:
   #     uses: myci-actions/checkout@main
   #   - name: set PACKAGE_VERSION
   #     uses: myci-actions/export-env-var@main
-  #     with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+  #     with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh)}
   #   - name: add cocoapods repo
   #     run: pod repo add --silent cppfw https://$MYCI_GIT_USERNAME@github.com/cppfw/cocoapods-repo.git
   #   - name: install deps
@@ -270,7 +282,7 @@ jobs:
   #   - name: deploy
   #     run: |
   #       echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
-  #       myci-deploy-cocoapods-ssh.sh --repo cppfw --version $PACKAGE_VERSION --server gagis.hopto.org --key repo_key_rsa --generic-repo cppfw/cocoapods --package $PACKAGE_NAME-$PACKAGE_VERSION.zip cocoapods/$PACKAGE_NAME.podspec.in
+  #       myci-deploy-cocoapods-ssh.sh --repo cppfw --version $PACKAGE_VERSION --server gagis.hopto.org --key repo_key_rsa --generic-repo cppfw/cocoapods --package $PACKAGE_NAME-$PACKAGE_VERSION.zip build/cocoapods/$PACKAGE_NAME.podspec.in
   #     if: startsWith(github.ref, 'refs/tags/')
 ##### android #####
   # android:
@@ -288,15 +300,15 @@ jobs:
   #       install: myci
   #   - name: set PACKAGE_VERSION
   #     uses: myci-actions/export-env-var@main
-  #     with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh debian/changelog)}
+  #     with: {name: PACKAGE_VERSION, value: $(myci-deb-version.sh)}
   #   - name: build
   #     run: |
-  #       cd android
+  #       cd build/android
   #       ./gradlew copy_aar --warning-mode all
   #       myci-apply-version.sh --version $PACKAGE_VERSION *.pom.in
   #       myci-apply-version.sh --version $PACKAGE_VERSION *.aar.in --filename-only
   #   - name: deploy
-  #     run: myci-deploy-maven-nexus.sh --base-url https://gagis.hopto.org/nexus --repo android android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
+  #     run: myci-deploy-maven-nexus.sh --base-url https://gagis.hopto.org/nexus --repo android build/android/$PACKAGE_NAME-$PACKAGE_VERSION.aar
   #     if: startsWith(github.ref, 'refs/tags/')
 ##### msys2 #####
   msys2:
@@ -338,43 +350,17 @@ jobs:
     - name: git clone
       uses: myci-actions/checkout@main
     - name: prepare pacman package
-      run: myci-apply-version.sh --version $(myci-deb-version.sh debian/changelog) msys2/PKGBUILD.in
+      run: myci-apply-version.sh build/msys2/PKGBUILD.in
     - name: build
       # to make makepkg-mingw build only one architecture we need to set the MINGW_ARCH
       env: {MINGW_ARCH: '${{ matrix.repo }}'}
       run: |
-        cd msys2
+        cd build/msys2
         PKGEXT='.pkg.tar.xz' makepkg-mingw --syncdeps --noconfirm --skipinteg
     - name: deploy
       run: |
         echo "${{ secrets.MYCI_REPO_SSH_KEY }}" > repo_key_rsa && chmod 600 repo_key_rsa
-        for f in $(find msys2 -name "mingw-w64-${{ matrix.arch }}-$PACKAGE_NAME-*-any.pkg.*"); do
+        for f in $(find build/msys2 -name "mingw-w64-${{ matrix.arch }}-$PACKAGE_NAME-*-any.pkg.*"); do
           myci-deploy-pacman-ssh.sh --server gagis.hopto.org --key repo_key_rsa --repo cppfw/msys2/${{ matrix.repo }} --database cppfw_${{ matrix.repo }} $f
         done
       if: startsWith(github.ref, 'refs/tags/')
-##### msvs #####
-  # msvs:
-  #   runs-on: windows-latest
-  #   defaults:
-  #     run:
-  #       shell: powershell
-  #   steps:
-  #   - name: git clone
-  #     uses: actions/checkout@v3
-  #     with: {submodules: true}
-  #   - name: install CoAPP tools
-  #     uses: myci-actions/install-coapp-tools@main
-  #   - name: nuget update
-  #     run: |
-  #       nuget restore msvs_solution/msvs_solution.sln
-  #       nuget update msvs_solution/msvs_solution.sln
-  #   - name: add msbuild to PATH
-  #     uses: microsoft/setup-msbuild@v1.1
-  #   - name: build
-  #     run: .\nuget\build_nuget.ps1
-  #   - name: deploy
-  #     uses: myci-actions/publish-nuget@main
-  #     with:
-  #       filename: '.\nuget\*.nupkg'
-  #       api-key: ${{ secrets.NUGET_DOT_ORG_API_KEY }}
-  #     if: startsWith(github.ref, 'refs/tags/')

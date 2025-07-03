@@ -107,8 +107,8 @@ std::optional<uint32_t> connection_thread::on_loop()
 					}
 				}
 				if (first_read) {
-					// zero bytes received right after the object has become ready to read,
-					// this means that the connection is disconnected
+					// zero bytes received right after the object has become ready to
+					// read, this means that the connection is disconnected
 					LOG([](auto& o) {
 						o << "disconnected (receive), quit thread!" << std::endl;
 					})
@@ -129,13 +129,15 @@ std::optional<uint32_t> connection_thread::on_loop()
 		}
 
 		// It shouldn't be possible that socket is ready to write, but connection is
-		// not ready to write, because then we shouldn't be waiting for writing on the socket.
+		// not ready to write, because then we shouldn't be waiting for writing on
+		// the socket.
 		ASSERT(!(!c->status.get(opros::ready::write) && t.flags.get(opros::ready::write)))
 
 		if (t.flags.get(opros::ready::write)) {
 			bool is_first_send = true;
 			while (true) {
-				// if we were waiting on socket for writing, then connection is ready to write as well
+				// if we were waiting on socket for writing, then connection is ready to
+				// write as well
 				ASSERT(c->status.get(opros::ready::write))
 				ASSERT(!c->sending_queue.empty())
 
@@ -169,7 +171,8 @@ std::optional<uint32_t> connection_thread::on_loop()
 					c->num_bytes_sent = 0;
 
 					if (!c->sending_queue.empty()) {
-						// the socket is possibly still ready to write, try to send more data
+						// the socket is possibly still ready to write, try to send more
+						// data
 						continue;
 					}
 
@@ -185,7 +188,8 @@ std::optional<uint32_t> connection_thread::on_loop()
 						ASSERT(!c->sending_queue.empty())
 						ASSERT(!c->sending_queue.front().empty())
 						ASSERT(c->num_bytes_sent != c->sending_queue.front().size())
-						// the socket is possibly still ready to write, try to send more data
+						// the socket is possibly still ready to write, try to send more
+						// data
 						continue;
 					}
 
