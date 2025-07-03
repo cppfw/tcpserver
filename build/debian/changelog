@@ -1,3 +1,9 @@
+libtcpserver (0.1.6) unstable; urgency=medium
+
+  * add debian dbg package
+
+ -- Ivan Gagis <igagis@gmail.com>  Thu, 03 Jul 2025 13:22:47 +0300
+
 libtcpserver (0.1.5) unstable; urgency=medium
 
   * ubuntu noble build
