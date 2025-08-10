@@ -1,3 +1,9 @@
+libtcpserver (0.1.7) unstable; urgency=medium
+
+  * debian trixie build
+
+ -- Ivan Gagis <igagis@gmail.com>  Mon, 11 Aug 2025 00:09:37 +0300
+
 libtcpserver (0.1.6) unstable; urgency=medium
 
   * add debian dbg package
