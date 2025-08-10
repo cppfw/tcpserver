@@ -10,9 +10,9 @@
             "group": "build"
         },
         {
-            "label": "build-dbg",
+            "label": "build-dev",
             "type": "shell",
-            "command": "make config=dbg",
+            "command": "make config=dev",
             "group": "build"
         },
         {
@@ -34,15 +34,15 @@
             "group": "build"
         },
         {
-            "label": "run-app-dbg",
+            "label": "run-app-dev",
             "type": "shell",
-            "command": "make run-app config=dbg",
+            "command": "make run-app config=dev",
             "group": "build"
         },
         {
-            "label": "test-dbg",
+            "label": "test-dev",
             "type": "shell",
-            "command": "make config=dbg test",
+            "command": "make config=dev test",
             "group": "build"
         },
         {
