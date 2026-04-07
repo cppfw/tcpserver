@@ -1,3 +1,9 @@
+libtcpserver (0.1.9) unstable; urgency=medium
+
+  * cmake
+
+ -- Ivan Gagis <igagis@gmail.com>  Tue, 07 Apr 2026 12:39:05 +0300
+
 libtcpserver (0.1.8) unstable; urgency=medium
 
   * debian: fix dbgsrc path
