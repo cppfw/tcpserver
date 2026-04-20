@@ -118,9 +118,10 @@ std::optional<uint32_t> connection_thread::on_loop()
 					return {};
 				}
 			} catch (std::exception& e) {
-				LOG([&](auto& o) {
+				utki::log_debug([&](auto& o) {
 					o << "std::exception caught while receiving data from socket: " << e.what() << std::endl;
-				})
+				});
+
 				// connection broken, destroy thread
 				// TODO: reclaim only connection
 				this->owner.reclaim_thread(*this);
