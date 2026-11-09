@@ -45,7 +45,7 @@ connection_thread::~connection_thread()
 
 void connection_thread::push(const utki::shared_ref<tcpserver::connection>& conn)
 {
-	this->push_back([this, c = conn]() mutable {
+	this->push([this, c = conn]() mutable {
 		ASSERT(!this->connection)
 		this->connection = c.to_shared_ptr();
 

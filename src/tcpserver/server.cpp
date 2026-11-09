@@ -69,7 +69,7 @@ void server::reclaim_thread(connection_thread& t)
 {
 	t.quit();
 	// TODO: push to killer thread
-	this->push_back([i = t.owner_iter, this]() {
+	this->push([i = t.owner_iter, this]() {
 		i->join();
 		this->threads.erase(i);
 	});

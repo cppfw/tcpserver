@@ -51,6 +51,10 @@ class connection_thread : public nitki::loop_thread
 	std::shared_ptr<tcpserver::connection> connection;
 
 public:
+	// bring the inherited loop_thread::push(std::function<void()>) into scope
+	// (it is otherwise hidden by the push(shared_ref<connection>) method)
+	using nitki::loop_thread::push;
+
 	connection_thread(server& owner);
 
 	connection_thread(const connection_thread&) = delete;
