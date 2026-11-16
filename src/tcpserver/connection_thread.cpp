@@ -46,7 +46,7 @@ connection_thread::~connection_thread()
 void connection_thread::push(const utki::shared_ref<tcpserver::connection>& conn)
 {
 	this->push([this, c = conn]() mutable {
-		ASSERT(!this->connection)
+		utki::assert(!this->connection, SL);
 		this->connection = c.to_shared_ptr();
 
 		this->wait_set.add(
@@ -93,7 +93,7 @@ std::optional<uint32_t> connection_thread::on_loop()
 				bool first_read = true;
 				while (size_t num_bytes_received = c->socket.receive(buf)) {
 					first_read = false;
-					ASSERT(num_bytes_received > 0)
+					utki::assert(num_bytes_received > 0, SL);
 
 					auto prev_status = c->status;
 
@@ -132,19 +132,19 @@ std::optional<uint32_t> connection_thread::on_loop()
 		// It shouldn't be possible that socket is ready to write, but connection is
 		// not ready to write, because then we shouldn't be waiting for writing on
 		// the socket.
-		ASSERT(!(!c->status.get(opros::ready::write) && t.flags.get(opros::ready::write)))
+		utki::assert(!(!c->status.get(opros::ready::write) && t.flags.get(opros::ready::write)), SL);
 
 		if (t.flags.get(opros::ready::write)) {
 			bool is_first_send = true;
 			while (true) {
 				// if we were waiting on socket for writing, then connection is ready to
 				// write as well
-				ASSERT(c->status.get(opros::ready::write))
-				ASSERT(!c->sending_queue.empty())
+				utki::assert(c->status.get(opros::ready::write), SL);
+				utki::assert(!c->sending_queue.empty(), SL);
 
 				// connection has data to send and socket is ready for sending
 
-				ASSERT(c->num_bytes_sent < c->sending_queue.front().size())
+				utki::assert(c->num_bytes_sent < c->sending_queue.front().size(), SL);
 
 				const auto& data_to_send = c->sending_queue.front();
 
@@ -152,7 +152,7 @@ std::optional<uint32_t> connection_thread::on_loop()
 
 				size_t num_bytes_sent = c->socket.send(span);
 
-				ASSERT(num_bytes_sent <= span.size())
+				utki::assert(num_bytes_sent <= span.size(), SL);
 
 				if (num_bytes_sent == 0 && is_first_send) {
 					// disconnected
@@ -179,16 +179,16 @@ std::optional<uint32_t> connection_thread::on_loop()
 
 					auto old_status = c->status;
 
-					ASSERT(c->sending_queue.empty())
+					utki::assert(c->sending_queue.empty(), SL);
 					c->status.clear(opros::ready::write);
 					c->handle_all_data_sent();
 
 					if (c->status.get(opros::ready::write)) {
-						ASSERT(c->status.get(opros::ready::write))
+						utki::assert(c->status.get(opros::ready::write), SL);
 
-						ASSERT(!c->sending_queue.empty())
-						ASSERT(!c->sending_queue.front().empty())
-						ASSERT(c->num_bytes_sent != c->sending_queue.front().size())
+						utki::assert(!c->sending_queue.empty(), SL);
+						utki::assert(!c->sending_queue.front().empty(), SL);
+						utki::assert(c->num_bytes_sent != c->sending_queue.front().size(), SL);
 						// the socket is possibly still ready to write, try to send more
 						// data
 						continue;
